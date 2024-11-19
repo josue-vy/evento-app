@@ -28,6 +28,7 @@ function App() {
       {cameraActive ? (
         <div className="relative w-full max-w-md mb-6">
           <QRScanner
+            facingMode="environment" // Utilizamos la cámara trasera (environment)
             delay={300} // La demora en milisegundos entre cada escaneo
             style={{ width: '100%' }} // Hacemos que el escáner ocupe todo el ancho
             onScan={handleScan} // Llamamos a la función handleScan cuando se detecte un QR
@@ -68,3 +69,4 @@ function App() {
 }
 
 export default App;
+
