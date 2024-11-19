@@ -1,66 +1,95 @@
-// src/App.tsx
-
 import { useState, useEffect } from "react";
-import QRScanner from "react-qr-scanner"; // Importamos la librería para leer códigos QR
+import QRScanner from "react-qr-scanner";
 
 function App() {
-  // Estados para manejar la cámara y los datos del QR
   const [cameraActive, setCameraActive] = useState(false);
   const [qrData, setQrData] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
+  const [constraints, setConstraints] = useState({
+    facingMode: { exact: "environment" },
+    width: { ideal: 1280 },
+    height: { ideal: 720 }
+  });
 
-  // Función para manejar el escaneo del QR
   const handleScan = (data: string | null) => {
     if (data) {
-      setQrData(data); // Actualizamos el estado con el código QR detectado
+      setQrData(data);
     }
   };
 
-  // Función para manejar el error de la cámara
   const handleError = (err: any) => {
     console.error("Error al escanear el QR:", err);
+    // Si falla la cámara trasera, intentamos con la frontal
+    if (facingMode === "environment") {
+      console.log("Intentando con cámara frontal...");
+      setFacingMode("user");
+      setConstraints({
+        facingMode: { exact: "user" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      });
+    }
   };
 
-  // Función para alternar entre la cámara frontal y trasera
   const toggleCamera = () => {
     const nextMode = facingMode === "environment" ? "user" : "environment";
     setFacingMode(nextMode);
-    console.log("Cambiando a cámara:", nextMode);
+    setConstraints({
+      facingMode: { exact: nextMode },
+      width: { ideal: 1280 },
+      height: { ideal: 720 }
+    });
+    // Reiniciamos la cámara
+    setCameraActive(false);
+    setTimeout(() => setCameraActive(true), 100);
   };
 
-  // Verificar cámaras disponibles (se ejecuta al iniciar la app)
   useEffect(() => {
-    navigator.mediaDevices.enumerateDevices().then((devices) => {
-      const videoDevices = devices.filter((device) => device.kind === "videoinput");
-      console.log("Cámaras disponibles:", videoDevices);
-    });
+    async function checkCameras() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter((device) => device.kind === "videoinput");
+        console.log("Cámaras disponibles:", videoDevices);
+        
+        // Si no hay cámara trasera disponible, comenzamos con la frontal
+        if (videoDevices.length === 1) {
+          setFacingMode("user");
+          setConstraints({
+            facingMode: { exact: "user" },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          });
+        }
+      } catch (error) {
+        console.error("Error al enumerar dispositivos:", error);
+      }
+    }
+    
+    checkCameras();
   }, []);
 
   return (
     <div className="min-h-screen bg-gray-200 flex flex-col items-center justify-center p-4">
       <h1 className="text-3xl font-bold text-blue-600 mb-6">Escáner de Códigos QR</h1>
 
-      {/* Mostrar la cámara solo si está activa */}
-      {cameraActive ? (
+      {cameraActive && (
         <div className="relative w-full max-w-md mb-6">
           <QRScanner
-            facingMode={facingMode} // Usamos el estado para cambiar entre las cámaras
-            delay={300} // La demora en milisegundos entre cada escaneo
-            style={{ width: "100%" }} // Hacemos que el escáner ocupe todo el ancho
-            videoConstraints={{
-              facingMode: facingMode, // Especificamos directamente el modo
-            }}
-            onScan={handleScan} // Llamamos a la función handleScan cuando se detecte un QR
-            onError={handleError} // Llamamos a la función handleError si ocurre un error
+            delay={300}
+            style={{ width: "100%" }}
+            onScan={handleScan}
+            onError={handleError}
+            constraints={constraints}
           />
         </div>
-      ) : (
+      )}
+
+      {!cameraActive && (
         <div className="mb-6 text-lg text-gray-600">
           <p>La cámara está apagada. Haz clic en "Iniciar Cámara" para comenzar.</p>
         </div>
       )}
 
-      {/* Mostrar el código QR detectado si existe */}
       {qrData && (
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-gray-800">Código QR Detectado:</h2>
@@ -68,25 +97,24 @@ function App() {
         </div>
       )}
 
-      {/* Botones para iniciar, apagar la cámara y alternar entre cámaras */}
-      <div className="flex space-x-4">
+      <div className="flex flex-wrap gap-4 justify-center">
         <button
-          onClick={() => setCameraActive(true)} // Iniciar cámara
+          onClick={() => setCameraActive(true)}
           className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-300"
         >
           Iniciar Cámara
         </button>
         <button
-          onClick={() => setCameraActive(false)} // Apagar cámara
+          onClick={() => setCameraActive(false)}
           className="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-300"
         >
           Apagar Cámara
         </button>
         <button
-          onClick={toggleCamera} // Alternar entre cámara frontal y trasera
+          onClick={toggleCamera}
           className="px-6 py-3 bg-yellow-600 text-white font-semibold rounded-lg hover:bg-yellow-700 transition duration-300"
         >
-          Cambiar Cámara
+          Cambiar Cámara ({facingMode === "environment" ? "Trasera" : "Frontal"})
         </button>
       </div>
     </div>
