@@ -1,12 +1,13 @@
 // src/App.tsx
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import QRScanner from 'react-qr-scanner'; // Importamos la librería para leer códigos QR
 
 function App() {
   // Estados para manejar la cámara y los datos del QR
   const [cameraActive, setCameraActive] = useState(false);
   const [qrData, setQrData] = useState<string | null>(null);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment'); // Estado para manejar la cámara seleccionada
 
   // Función para manejar el escaneo del QR
   const handleScan = (data: string | null) => {
@@ -20,6 +21,11 @@ function App() {
     console.error('Error al escanear el QR:', err);
   };
 
+  // Función para alternar entre la cámara frontal y trasera
+  const toggleCamera = () => {
+    setFacingMode((prevMode) => (prevMode === 'environment' ? 'user' : 'environment'));
+  };
+
   return (
     <div className="min-h-screen bg-gray-200 flex flex-col items-center justify-center p-4">
       <h1 className="text-3xl font-bold text-blue-600 mb-6">Escáner de Códigos QR</h1>
@@ -28,7 +34,7 @@ function App() {
       {cameraActive ? (
         <div className="relative w-full max-w-md mb-6">
           <QRScanner
-            facingMode="environment" // Utilizamos la cámara trasera (environment)
+            facingMode={facingMode} // Usamos el estado para cambiar entre las cámaras
             delay={300} // La demora en milisegundos entre cada escaneo
             style={{ width: '100%' }} // Hacemos que el escáner ocupe todo el ancho
             onScan={handleScan} // Llamamos a la función handleScan cuando se detecte un QR
@@ -49,7 +55,7 @@ function App() {
         </div>
       )}
 
-      {/* Botones para iniciar y apagar la cámara */}
+      {/* Botones para iniciar, apagar la cámara y alternar entre cámaras */}
       <div className="flex space-x-4">
         <button
           onClick={() => setCameraActive(true)} // Iniciar cámara
@@ -63,10 +69,15 @@ function App() {
         >
           Apagar Cámara
         </button>
+        <button
+          onClick={toggleCamera} // Alternar entre cámara frontal y trasera
+          className="px-6 py-3 bg-yellow-600 text-white font-semibold rounded-lg hover:bg-yellow-700 transition duration-300"
+        >
+          Cambiar camara
+        </button>
       </div>
     </div>
   );
 }
 
 export default App;
-
