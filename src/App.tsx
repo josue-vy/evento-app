@@ -1,13 +1,13 @@
 // src/App.tsx
 
-import { useState, useEffect } from 'react';
-import QRScanner from 'react-qr-scanner'; // Importamos la librería para leer códigos QR
+import { useState, useEffect } from "react";
+import QRScanner from "react-qr-scanner"; // Importamos la librería para leer códigos QR
 
 function App() {
   // Estados para manejar la cámara y los datos del QR
   const [cameraActive, setCameraActive] = useState(false);
   const [qrData, setQrData] = useState<string | null>(null);
-  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment'); // Estado para manejar la cámara seleccionada
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
 
   // Función para manejar el escaneo del QR
   const handleScan = (data: string | null) => {
@@ -18,13 +18,23 @@ function App() {
 
   // Función para manejar el error de la cámara
   const handleError = (err: any) => {
-    console.error('Error al escanear el QR:', err);
+    console.error("Error al escanear el QR:", err);
   };
 
   // Función para alternar entre la cámara frontal y trasera
   const toggleCamera = () => {
-    setFacingMode((prevMode) => (prevMode === 'environment' ? 'user' : 'environment'));
+    const nextMode = facingMode === "environment" ? "user" : "environment";
+    setFacingMode(nextMode);
+    console.log("Cambiando a cámara:", nextMode);
   };
+
+  // Verificar cámaras disponibles (se ejecuta al iniciar la app)
+  useEffect(() => {
+    navigator.mediaDevices.enumerateDevices().then((devices) => {
+      const videoDevices = devices.filter((device) => device.kind === "videoinput");
+      console.log("Cámaras disponibles:", videoDevices);
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-200 flex flex-col items-center justify-center p-4">
@@ -36,7 +46,10 @@ function App() {
           <QRScanner
             facingMode={facingMode} // Usamos el estado para cambiar entre las cámaras
             delay={300} // La demora en milisegundos entre cada escaneo
-            style={{ width: '100%' }} // Hacemos que el escáner ocupe todo el ancho
+            style={{ width: "100%" }} // Hacemos que el escáner ocupe todo el ancho
+            videoConstraints={{
+              facingMode: facingMode, // Especificamos directamente el modo
+            }}
             onScan={handleScan} // Llamamos a la función handleScan cuando se detecte un QR
             onError={handleError} // Llamamos a la función handleError si ocurre un error
           />
@@ -73,7 +86,7 @@ function App() {
           onClick={toggleCamera} // Alternar entre cámara frontal y trasera
           className="px-6 py-3 bg-yellow-600 text-white font-semibold rounded-lg hover:bg-yellow-700 transition duration-300"
         >
-          Cambiar camara
+          Cambiar Cámara
         </button>
       </div>
     </div>
