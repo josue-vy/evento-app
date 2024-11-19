@@ -1,31 +1,54 @@
 import React, { useState } from "react";
 import { QrReader } from "react-qr-reader";
+import axios from "axios";
 
 const QRScanner: React.FC = () => {
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
+  const [userRegisteredMessage, setUserRegisteredMessage] = useState<string | null>(null);
 
-  const handleScan = (data: string | null) => {
+  const handleScan = async (data: string | null) => {
     if (data) {
       setQrCode(data);
       setError(null);
+      setIsCameraActive(false);
+      setUserRegisteredMessage("Usuario registrado correctamente con el código QR");
+      setTimeout(() => setUserRegisteredMessage(null), 5000);
+      await saveQRCode(data);
     }
   };
 
   const handleError = (err: any) => {
-    setError("Error al acceder a la cámara. Verifica los permisos.");
+    const errorMessage = "Error al acceder a la cámara. Verifica los permisos.";
+    setError(errorMessage);
     console.error(err);
   };
 
   const handleStartCamera = () => {
     setIsCameraActive(true);
-    setError(null); // Resetear errores al iniciar la cámara
+    setError(null);
+    setUserRegisteredMessage(null);
   };
 
   const handleStopCamera = () => {
     setIsCameraActive(false);
-    setQrCode(null); // Limpiar el código detectado
+    setQrCode(null);
+    setUserRegisteredMessage(null);
+  };
+
+  const saveQRCode = async (qrCode: string) => {
+    try {
+      const response = await axios.post("https://backend-evento-epis.onrender.com/backend/post-qr", {
+        codigoQR: qrCode,
+        fecha: new Date().toISOString()
+      });
+      console.log("QR guardado correctamente", response.data);
+    } catch (error) {
+      const errorMessage = "Error al guardar el código QR en la base de datos.";
+      setError(errorMessage);
+      console.error(errorMessage, error);
+    }
   };
 
   return (
@@ -65,15 +88,15 @@ const QRScanner: React.FC = () => {
           </div>
         )}
       </div>
-      {qrCode && (
-        <div className="mt-4 p-4 bg-green-100 text-green-800 rounded-lg shadow">
-          <p className="font-medium">Código detectado:</p>
-          <p className="break-words">{qrCode}</p>
-        </div>
-      )}
       {error && (
         <div className="mt-4 p-4 bg-red-100 text-red-800 rounded-lg shadow">
           <p className="font-medium">{error}</p>
+        </div>
+      )}
+
+      {userRegisteredMessage && (
+        <div className="mt-4 p-4 bg-yellow-100 text-yellow-800 rounded-lg shadow">
+          <p className="font-medium">{userRegisteredMessage}</p>
         </div>
       )}
     </div>

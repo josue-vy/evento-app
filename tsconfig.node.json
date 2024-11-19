@@ -18,7 +18,10 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* Tipos de Node.js */
+    "types": ["node"]  // Agregar esta línea
   },
   "include": ["vite.config.ts"]
 }
