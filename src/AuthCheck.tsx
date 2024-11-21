@@ -14,7 +14,8 @@ const AuthCheck: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticated 
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:3000/backend/login",
+        "https://backend-evento-epis-1.onrender.com/backend/login",
+        // "http://localhost:3000/backend/login",
         { email, password },
         { withCredentials: true } // Esto envía las cookies con la solicitud
       );

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 const QRScannerContent: React.FC = () => {
   const navigate = useNavigate();
-  const [qrCode, setQrCode] = useState<string | null>(null);
+  const [, setQrCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
   const [userRegisteredMessage, setUserRegisteredMessage] = useState<string | null>(null);
@@ -57,7 +57,8 @@ const QRScannerContent: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/backend/validar-qr",
+        "https://backend-evento-epis-1.onrender.com/backend/validar-qr",
+        // "http://localhost:3000/backend/validar-qr",
         { qrCodigo: qrCode },
         { withCredentials: true }
       );
