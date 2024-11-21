@@ -21,6 +21,7 @@ const QRScannerContent: React.FC = () => {
     };
   }, []);
 
+  // Manejar el escaneo del QR
   const handleScan = async (data: string | null) => {
     if (data && !isQRCodeProcessed) {  // Verificar que no se haya procesado antes
       setQrCode(data);
@@ -33,12 +34,14 @@ const QRScannerContent: React.FC = () => {
     }
   };
 
+  // Manejar errores al acceder a la cámara
   const handleError = (err: any) => {
     const errorMessage = "Error al acceder a la cámara. Verifica los permisos.";
     setError(errorMessage);
     console.error(err);
   };
 
+  // Iniciar la cámara y reiniciar el estado
   const handleStartCamera = () => {
     setIsCameraActive(true);
     setError(null);
@@ -46,6 +49,7 @@ const QRScannerContent: React.FC = () => {
     setIsQRCodeProcessed(false); // Reiniciar estado para cuando el usuario inicia el escaneo nuevamente
   };
 
+  // Detener la cámara y resetear el estado
   const handleStopCamera = () => {
     setIsCameraActive(false);
     setQrCode(null);
@@ -53,6 +57,7 @@ const QRScannerContent: React.FC = () => {
     setIsQRCodeProcessed(false); // Reiniciar estado al apagar la cámara
   };
 
+  // Validar el QR con el backend
   const validateQRCode = async (qrCode: string) => {
     if (!qrCode.trim()) {
       setError("El código QR está vacío o es inválido.");
