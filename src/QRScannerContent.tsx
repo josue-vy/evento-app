@@ -57,7 +57,7 @@ const QRScannerContent: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "https://backend-evento-epis-1.onrender.com/backend/validar-qr",
+        "https://backend-evento-epis-2.onrender.com/backend/validar-qr",
         // "http://localhost:3000/backend/validar-qr",
         { qrCodigo: qrCode },
         { withCredentials: true }
