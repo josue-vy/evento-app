@@ -9,6 +9,7 @@ const QRScannerContent: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
   const [userRegisteredMessage, setUserRegisteredMessage] = useState<string | null>(null);
+  const [isQRCodeProcessed, setIsQRCodeProcessed] = useState<boolean>(false); // Nueva bandera para evitar procesar el QR dos veces
 
   // Flag para verificar si el componente está montado
   const isMounted = useRef(true);
@@ -21,11 +22,12 @@ const QRScannerContent: React.FC = () => {
   }, []);
 
   const handleScan = async (data: string | null) => {
-    if (data) {
+    if (data && !isQRCodeProcessed) {  // Verificar que no se haya procesado antes
       setQrCode(data);
       setError(null);
       setIsCameraActive(false);
       setUserRegisteredMessage("Procesando QR...");
+      setIsQRCodeProcessed(true); // Marcamos el QR como procesado
       setTimeout(() => setUserRegisteredMessage(null), 5000);
       await validateQRCode(data); // Llamada al backend para validar el código QR
     }
@@ -41,12 +43,14 @@ const QRScannerContent: React.FC = () => {
     setIsCameraActive(true);
     setError(null);
     setUserRegisteredMessage(null);
+    setIsQRCodeProcessed(false); // Reiniciar estado para cuando el usuario inicia el escaneo nuevamente
   };
 
   const handleStopCamera = () => {
     setIsCameraActive(false);
     setQrCode(null);
     setUserRegisteredMessage(null);
+    setIsQRCodeProcessed(false); // Reiniciar estado al apagar la cámara
   };
 
   const validateQRCode = async (qrCode: string) => {
@@ -58,7 +62,6 @@ const QRScannerContent: React.FC = () => {
     try {
       const response = await axios.post(
         "https://backend-evento-epis-2.onrender.com/backend/validar-qr",
-        // "http://localhost:3000/backend/validar-qr",
         { qrCodigo: qrCode },
         { withCredentials: true }
       );
@@ -70,7 +73,7 @@ const QRScannerContent: React.FC = () => {
           setUserRegisteredMessage(response.data.message || "QR validado exitosamente.");
           setTimeout(() => {
             setIsCameraActive(false);
-            navigate("/");
+            navigate("/"); // Redirigir después de un escaneo exitoso
           }, 2000);
         }
       }
